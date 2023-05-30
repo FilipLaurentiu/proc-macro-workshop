@@ -33,6 +33,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
                  #(#fields_idents : std::option::Option::<#fields_types>,)*
         }
 
+        impl #builder_name {
+            #(fn #fields_idents(&mut self, ty: #fields_types) -> &mut Self  {
+                self.#fields_idents = Some(ty);
+                self
+            })*
+        }
+
 
         impl #name {
             pub fn builder() -> #builder_name {
@@ -40,6 +47,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     #(#fields_idents: std::option::Option::None,)*
                 }
             }
+
+
         }
 
 
