@@ -3,7 +3,6 @@ use quote::{format_ident, quote};
 use syn::{parse_macro_input, DeriveInput};
 use syn::Data::Struct;
 
-
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -28,6 +27,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     }).collect::<Vec<_>>();
     let fields_types = fields.iter().map(|field| &field.ty).collect::<Vec<_>>();
 
+
     let res = quote! {
         pub struct #builder_name {
                  #(#fields_idents : std::option::Option::<#fields_types>,)*
@@ -38,6 +38,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 self.#fields_idents = Some(ty);
                 self
             })*
+
+            pub fn build(&mut self) -> std::result::Result<#name, std::boxed::Box<dyn std::error::Error>> {
+                Ok(#name {
+                     #(#fields_idents : self.#fields_idents.clone().expect("Field not set"),)*
+                })
+            }
         }
 
 
@@ -47,11 +53,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     #(#fields_idents: std::option::Option::None,)*
                 }
             }
-
-
         }
-
-
     };
 
     res.into()
